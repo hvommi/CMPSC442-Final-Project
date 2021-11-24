@@ -30,8 +30,10 @@ def calc_sum(landmarkList):
     return tsum
 
 
-def calc_dist(landmarkList):
-    return (landmarkList[28].y * 640 - landmarkList[24].y * 640)
+def calc_dist(landmarkList): #calculates if a left leg moved
+    return (landmarkList[28].y * 640 - landmarkList[24].y * 640) #distance between right hip and left ankle
+
+    #add the other leg???
 
 
 def isVisible(landmarkList):
@@ -56,6 +58,7 @@ while True:
     res = pose.process(rgb)
     frm = cv2.blur(frm, (5, 5))
     drawing.draw_landmarks(frm, res.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+    #^^^ bring in 'find_markers() code here' - look for a rectangle based on 11+12, 23+24
 
     if not (inFramecheck):
         try:
