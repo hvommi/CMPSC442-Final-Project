@@ -5,6 +5,7 @@ import numpy as np
 import time
 from playsound import playsound
 
+#initializing variables: capture, start values, winner condition, etc.
 cap = cv2.VideoCapture(0)
 cPos = 0
 startT = 0
@@ -19,9 +20,9 @@ tempSum = 0
 winner = 0
 inFrame = 0
 inFramecheck = False
-thresh = 180
+thresh = 180 #tolerated difference between hip and ankle movement
 
-
+#??? himani will look at this again later.... lol
 def calc_sum(landmarkList):
     tsum = 0
     for i in range(11, 33):
@@ -33,23 +34,24 @@ def calc_sum(landmarkList):
 def calc_dist(landmarkList): #calculates if a left leg moved
     return (landmarkList[28].y * 640 - landmarkList[24].y * 640) #distance between right hip and left ankle
 
-    #add the other leg???
+    #442 NOTE - add the other leg??? the arms??
 
-
+#checks to see if 70% of your legs are visible
 def isVisible(landmarkList):
     if (landmarkList[28].visibility > 0.7) and (landmarkList[24].visibility > 0.7):
         return True
     return False
 
-
+#draws pose endpoints over image feed using mediapipe
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
 drawing = mp.solutions.drawing_utils
 
+#red light and green light visual for user to know when to move/not
 im1 = cv2.imread('im1.png')
 im2 = cv2.imread('im2.png')
 
-currWindow = im1
+currWindow = im1 #begin with green light visual
 
 while True:
 
@@ -58,9 +60,10 @@ while True:
     res = pose.process(rgb)
     frm = cv2.blur(frm, (5, 5))
     drawing.draw_landmarks(frm, res.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-    #^^^ bring in 'find_markers() code here' - look for a rectangle based on 11+12, 23+24
+    #442 PROJECT NOTE - ^^^ bring in 'find_markers() code here' - look for a rectangle based on 11+12, 23+24
 
     if not (inFramecheck):
+        #checks to see if subject is in frame based on how many landmarks of human body are visible
         try:
             if isVisible(res.pose_landmarks.landmark):
                 inFrame = 1
@@ -71,19 +74,20 @@ while True:
             print("You are not visible at all")
 
     if inFrame == 1:
+        #once player is in frame, begin game:
         if not (isInit):
             playsound('greenLight.mp3')
             currWindow = im1
             startT = time.time()
             endT = startT
-            dur = np.random.randint(1, 5)
+            dur = np.random.randint(1, 5) #random time intervals: anywhere from 1 to 5 seconds
             isInit = True
 
         if (endT - startT) <= dur:
             try:
                 m = calc_dist(res.pose_landmarks.landmark)
                 if m < thresh:
-                    cPos += 1
+                    cPos += 1 #if the player's leg hasn't moved (or difference is tolerated), add +1 to progress
 
                 print("current progress is : ", cPos)
             except:
@@ -92,7 +96,7 @@ while True:
             endT = time.time()
 
         else:
-
+            #winner keeps going until 100 points are accumulated
             if cPos >= 100:
                 print("WINNER")
                 winner = 1
@@ -102,7 +106,7 @@ while True:
                     isCinit = True
                     cStart = time.time()
                     cEnd = cStart
-                    currWindow = im2
+                    currWindow = im2 #switch to red light visual
                     playsound('redLight.mp3')
                     userSum = calc_sum(res.pose_landmarks.landmark)
 
