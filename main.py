@@ -1,5 +1,6 @@
 import cv2
 from distanceFinder import DistanceFinder
+from ObjectDetectionGame.SquidGame import runGame
 
 
 webcam = False
@@ -12,6 +13,7 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
 distanceFinder = DistanceFinder()
+runGame() #integrate squid game code ^ is line above duplicate?
 quit = False
 while not quit:
     success, img = cap.read()
