@@ -13,11 +13,12 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
 distanceFinder = DistanceFinder()
-runGame() #integrate squid game code ^ is line above duplicate?
+# runGame() #integrate squid game code ^ is line above duplicate?
 quit = False
 while not quit:
     success, img = cap.read()
-    distanceFinder.findDistance(img, drawPose=True)
+    distance = distanceFinder.findDistance(img, drawPose=True)
+    print(distance) # Distance is in inches
     cv2.imshow('Video Feed', img)
     
     # Press q to quit

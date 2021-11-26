@@ -45,7 +45,8 @@ class DistanceFinder:
 		if pose.pose_landmarks:
 			inches = self.distance_to_camera(self.KNOWN_WIDTH, self.focalLength, abs(pose.pose_landmarks.landmark[12].x - pose.pose_landmarks.landmark[11].x))
 			cv2.putText(img, "%.2fft" % (inches / 12),
-				(int(pose.pose_landmarks.landmark[12].x * self.VIDEO_WIDTH), int(pose.pose_landmarks.landmark[12].y * self.VIDEO_HEIGHT)), cv2.FONT_HERSHEY_SIMPLEX,
+				(int((pose.pose_landmarks.landmark[12].x) * self.VIDEO_WIDTH) - 100, int(pose.pose_landmarks.landmark[12].y * self.VIDEO_HEIGHT)), cv2.FONT_HERSHEY_SIMPLEX,
 				2.0, (0, 255, 0), 3)
 			if drawPose:
 				self.drawing.draw_landmarks(img, pose.pose_landmarks, self.mp_pose.POSE_CONNECTIONS)
+		return inches
