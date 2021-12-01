@@ -23,7 +23,7 @@ emitmatrix = np.array([[0.9, 0.1],
     #obs 1: < 2 ft/s
     #obs 2: > 2 ft/s
 
-h = hmm.MultinomialHMM(n_components=2, startprob_prior=startprob, transmatprior=transmatrix)
+h = hmm.MultinomialHMM(n_components=2, startprob_prior=startprob, transmat_prior=transmatrix)
 h.emissionprob = emitmatrix
 
 X = [[1, 0, 1, 0, 0], [1, 1, 1, 1, 1], [1, 0, 0, 0, 0]]
@@ -31,9 +31,9 @@ h.fit(X)
 print(h, '\n')
 
 print("Transmission Probability")
-print(h.transmat)
+print(h.transmat_)
 print("Emission Probability")
-print(h.emissionprob)
+print(h.emissionprob_)
 
 print(h.decode(np.array([0,0,1,0,0]).reshape(5,1))) #using viterbi algorithm
 print(h.predict(np.array([0,0,1,0,0]).reshape(5,1))) #find most likely state sequence corresponding to X
