@@ -56,6 +56,7 @@ class SquidGame:
 
     def startGame(self):
         # Initializing variables: start values, etc.
+        prevDistance = 0
         greenStartTime = 0
         greenEndTime = 0
         greenDur = 0
@@ -79,8 +80,6 @@ class SquidGame:
             if not inFrame:
                 cv2.putText(frm, "Not fully in frame", (20, 200), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 4)
                 cv2.imshow("window", frm)
-            # else:
-            #     cv2.destroyAllWindows()
 
         currWindow = self.imGreen.copy() # Begin with green light visual
 
