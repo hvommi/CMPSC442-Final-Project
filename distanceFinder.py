@@ -1,6 +1,6 @@
+import cv2
 import mediapipe as mp
 import numpy as np
-import cv2
 
 
 class DistanceFinder:
@@ -54,3 +54,4 @@ class DistanceFinder:
 		# If shoulders can't be found, return -1 inches
 		else:
 			return -1
+
