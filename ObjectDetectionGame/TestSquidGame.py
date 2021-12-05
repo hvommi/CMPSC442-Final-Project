@@ -1,4 +1,3 @@
-from playsound import playsound
 import mediapipe as mp
 import numpy as np
 import cv2
@@ -11,11 +10,8 @@ class SquidGame:
     def __init__(self):
         # Initialize camera
         self.cap = cv2.VideoCapture(0)
-        # Set camera brightness
         self.cap.set(cv2.CAP_PROP_BRIGHTNESS, 160)
-        # Try to set camera width
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-        # Try to set camera height
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
         # Get actual width of camera
         self.video_width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
@@ -23,11 +19,14 @@ class SquidGame:
         self.video_height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         # Initializing constant game stuff
-        self.moveThres = 150 # Threshold for movement for red light. If user movement passes this threshold, they lose
+        self.moveThres = 250 # Threshold for movement for red light. If user movement passes this threshold, they lose
         self.goal = 24 # How close to camera the player should be to win in inches
-        self.imGreen = cv2.imread('ObjectDetectionGame/im1.png') # Green light image
-        self.imRed = cv2.imread('ObjectDetectionGame/im2.png') # Red light image
-        
+        self.imGreen = np.zeros((int(self.video_height/10), int(self.video_width), 3), np.uint8) # Green light image
+        self.imGreen[:] = (0, 255, 0)
+        self.imRed = np.zeros((int(self.video_height/10), int(self.video_width), 3), np.uint8) # Red light image
+        self.imRed[:] = (0, 0, 255)
+        self.redDelay = 0.5
+
         # Initializing mediapipe stuff
         self.mp_pose = mp.solutions.pose # Stuff for detecting poses
         self.drawing = mp.solutions.drawing_utils # Stuff for drawing poses
@@ -54,6 +53,16 @@ class SquidGame:
         except:
             print("Player not in frame")
 
+    # Finds speed, categorizes it, and returns it for HMM
+    def findSpeed(prevDistance, currDistance, greenDur):
+        slowThres = 2
+        speedCategories = [0, 1] # 0 is slow, 1 is fast
+        speed = (abs(currDistance - prevDistance) / greenDur)
+        if speed > slowThres:
+            return speedCategories[0]
+        else:
+            return speedCategories[1]
+
     def startGame(self):
         # Initializing variables: start values, etc.
         prevDistance = 0
@@ -63,14 +72,19 @@ class SquidGame:
         isGreenInit = False
         redStartTime = 0
         redEndTime = 0
-        redDur = 3
+        redDur = 3 + self.redDelay
         isRedInit = False
         lose = False
         win = False
         userSum = 0
         tempSum = 0
         inFrame = False
+        gameStart = False
 
+        # Initialize window to fit screen
+        windowName = "Squid Game"
+        cv2.namedWindow(windowName, flags=cv2.WINDOW_NORMAL)
+        
         while not inFrame:
             # Checks to see if subject is in frame based on how many landmarks of human body are visible
             # Game will not start unless player is in frame
@@ -79,22 +93,24 @@ class SquidGame:
             inFrame = self.checkInFrame(res)
             if not inFrame:
                 cv2.putText(frm, "Not fully in frame", (20, 200), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 4)
-                cv2.imshow("window", frm)
+                cv2.imshow(windowName, frm)
+            # Initialize values for start of game
+            if inFrame:
+                prevDistance = self.distanceFinder.findDistance(res)
+                gameStart = True
+                currWindow = self.imGreen.copy() # Begin with green light visual
 
-        currWindow = self.imGreen.copy() # Begin with green light visual
-
-        while True:
+        while gameStart:
             # Returns if read is successful and current frame
             success, frm = self.cap.read()
             res = self.distanceFinder.findPose(frm)
-            distance = self.distanceFinder.findDistance(res)
+            currDistance = self.distanceFinder.findDistance(res)
             self.drawing.draw_landmarks(frm, res.pose_landmarks, self.mp_pose.POSE_CONNECTIONS)
 
             # Once player is in frame, begin game
             if not isGreenInit:
                 # Initialize green light
                 isGreenInit = True
-                playsound('ObjectDetectionGame/greenLight.mp3')
                 currWindow = self.imGreen.copy()
                 greenStartTime = time.time()
                 greenEndTime = greenStartTime
@@ -104,28 +120,32 @@ class SquidGame:
             if (greenEndTime - greenStartTime) <= greenDur:
                 # Do stuff during green light
                 currWindow = self.imGreen.copy()
-                print("Current distance from goal: %.2fft" % ((distance - self.goal) / 12))
+                print("Current distance from goal: %.2fft" % ((currDistance - self.goal) / 12))
                 greenEndTime = time.time()
 
             else:
                 # Do stuff once green light is over
-                if distance <= self.goal:
+                if currDistance <= self.goal:
                     # If player is at goal, player wins
                     win = True
 
                 else:
+                    currWindow = self.imRed.copy() # Switch to red light visual
                     # Initialize red light
                     if not isRedInit:
                         isRedInit = True
                         redStartTime = time.time()
                         redEndTime = redStartTime
-                        currWindow = self.imRed.copy() # Switch to red light visual
-                        playsound('ObjectDetectionGame/redLight.mp3')
                         userSum = self.calc_sum(res.pose_landmarks.landmark)
+                        # Finds speed during previous green light here. Returns 0 or 1, slow or fast
+                        speed = self.findSpeed(prevDistance, currDistance, greenDur)
+
+                    # Add delay for red light to detect movement
+                    if (redEndTime - redStartTime) <= self.redDelay:
+                        redEndTime = time.time()
 
                     # Detects movement during red light
-                    if (redEndTime - redStartTime) <= redDur:
-                        currWindow = self.imRed.copy()
+                    elif (redEndTime - redStartTime) <= redDur:
                         tempSum = self.calc_sum(res.pose_landmarks.landmark)
                         redEndTime = time.time()
                         if abs(tempSum - userSum) > self.moveThres:
@@ -138,11 +158,11 @@ class SquidGame:
                         isRedInit = False
 
             # Stuff for displaying game
-            cv2.putText(currWindow, "Current distance from goal: %.2fft" % ((distance - self.goal) / 12),
-                (55, 280), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 3)
+            cv2.putText(currWindow, "Current distance from goal: %.2fft" % ((currDistance - self.goal) / 12),
+                (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 0), 3)
 
-            mainWin = np.concatenate((cv2.resize(frm, (800, 400)), currWindow), axis=0)
-            cv2.imshow("Main Window", mainWin)
+            mainWin = np.concatenate((frm, currWindow), axis=0)
+            cv2.imshow(windowName, mainWin)
 
             if cv2.waitKey(1) == 27 or lose or win:
                 # Quit game if ESC is pressed, or if player has won or lost
@@ -151,12 +171,15 @@ class SquidGame:
                 break
 
         if lose:
-            # Do stuff if player died / lost
-            cv2.putText(frm, "You lose!", (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 4)
-            cv2.imshow("Main Window", frm)
+            # Do stuff if player lost
+            currWindow = self.imRed.copy()
+            cv2.putText(currWindow, "You lose!", (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 0), 3)
         elif win:
             # Do stuff if player won
-            cv2.putText(frm, "You win!", (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 4)
-            cv2.imshow("Main Window", frm)
+            currWindow = self.imGreen.copy()
+            cv2.putText(currWindow, "You win!", (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 0), 3)
+        if lose or win:
+            mainWin = np.concatenate((frm, currWindow), axis=0)
+            cv2.imshow(windowName, mainWin)
         
         cv2.waitKey(0)
