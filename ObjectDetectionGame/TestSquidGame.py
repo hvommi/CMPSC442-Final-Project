@@ -43,18 +43,20 @@ class SquidGame:
     
     # Checks if player is in frame using pose landmarks
     def checkInFrame(self, res):
-        landmarkList = res.pose_landmarks.landmark
-        try:
-            # Checks to see if 70% of your shoulders are visible
-            if (landmarkList[11].visibility > 0.7) and (landmarkList[12].visibility > 0.7):
-                return True
-            else:
-                return False
-        except:
-            print("Player not in frame")
+        if res:
+            landmarkList = res.pose_landmarks.landmark
+            try:
+                # Checks to see if 70% of your shoulders are visible
+                if (landmarkList[11].visibility > 0.7) and (landmarkList[12].visibility > 0.7):
+                    return True
+                else:
+                    return False
+            except:
+                print("Player not in frame")
+        return False
 
     # Finds speed, categorizes it, and returns it for HMM
-    def findSpeed(prevDistance, currDistance, greenDur):
+    def findSpeed(self, prevDistance, currDistance, greenDur):
         slowThres = 2
         speedCategories = [0, 1] # 0 is slow, 1 is fast
         speed = (abs(currDistance - prevDistance) / greenDur)
@@ -138,6 +140,9 @@ class SquidGame:
                         redEndTime = redStartTime
                         userSum = self.calc_sum(res.pose_landmarks.landmark)
                         # Finds speed during previous green light here. Returns 0 or 1, slow or fast
+                        print(prevDistance)
+                        print(currDistance)
+                        print(greenDur)
                         speed = self.findSpeed(prevDistance, currDistance, greenDur)
 
                     # Add delay for red light to detect movement
