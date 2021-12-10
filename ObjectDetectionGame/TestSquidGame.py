@@ -2,7 +2,9 @@ import mediapipe as mp
 import numpy as np
 import cv2
 import time
+from HMM import HMM
 from distanceFinder import DistanceFinder
+
 
 
 class SquidGame:
@@ -34,6 +36,9 @@ class SquidGame:
         # Set up distance finder
         self.distanceFinder = DistanceFinder(VIDEO_WIDTH= self.video_width, VIDEO_HEIGHT= self.video_height)
 
+        # Initializing HMM
+        self.hmm = HMM()
+
     # Sums up the horizontal coordinates of each pose landmark. Used to detect movement during red light.
     def calc_sum(self, landmarkList):
         tsum = 0
@@ -57,13 +62,7 @@ class SquidGame:
 
     # Finds speed, categorizes it, and returns it for HMM
     def findSpeed(self, prevDistance, currDistance, greenDur):
-        slowThres = 2
-        speedCategories = [0, 1] # 0 is slow, 1 is fast
-        speed = (abs(currDistance - prevDistance) / greenDur)
-        if speed > slowThres:
-            return speedCategories[0]
-        else:
-            return speedCategories[1]
+        return (abs(currDistance - prevDistance) / greenDur)
 
     def startGame(self):
         # Initializing variables: start values, etc.
@@ -140,7 +139,12 @@ class SquidGame:
                         redEndTime = redStartTime
                         userSum = self.calc_sum(res.pose_landmarks.landmark)
                         # Finds speed during previous green light here. Returns 0 or 1, slow or fast
+                        # Speed is the difference between the current distance measured and the previous distance, divided by the duration of the green light
                         speed = self.findSpeed(prevDistance, currDistance, greenDur)
+                        # Feed speed into HMM
+                        print(speed)
+                        self.hmm.feedHMM(speed)
+
                         
                     # Add delay for red light to detect movement
                     if (redEndTime - redStartTime) <= self.redDelay:
