@@ -65,10 +65,6 @@ class SquidGame:
         return (abs(currDistance - prevDistance) / greenDur)
 
     def startGame(self):
-        print("------------------------------------")
-        print("--------SQUID GAME-------------")
-        print("------------------------------------")
-
         # Initializing variables: start values, etc.
         prevDistance = 0
         greenStartTime = 0
