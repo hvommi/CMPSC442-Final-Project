@@ -38,22 +38,21 @@ class HMM:
 
         # Accepts the speed observations and predicts the next observation
         def feedHMM(self, X):
-                speedThres = 2
+                self.h.fit([[1, 1, 0, 0, 0], [0, 0, 0, 0, 1], [0, 0, 1, 0, 0]])
                 if X > 2:
                         speedCategory = 1
                 else:
                         speedCategory = 0
-                self.h.fit([[0, 1, 1, 0, 1], [1, 0, 0, 1, 1]])
-                print(self.h, '\n')
+                # print(self.h, '\n')
 
-                print("Transmission Probability")
-                print(self.h.transmat_)
-                print("Emission Probability")
-                print(self.h.emissionprob_)
+                # print("Transmission Probability")
+                # print(self.h.transmat_)
+                # print("Emission Probability")
+                # print(self.h.emissionprob_)
 
-                print(self.h.decode(np.array([speedCategory]).reshape(len([speedCategory]), 1)))  # using viterbi algorithm
-                print(self.h.predict(np.array([speedCategory]).reshape(len([speedCategory]), 1)))  # find most likely state sequence corresponding to X
-                print(self.h.score(np.array([speedCategory]).reshape(len([speedCategory]), 1)))  # evaulate probability of sequence (X)
+                # print(self.h.decode(np.array([speedCategory]).reshape(len([speedCategory]), 1)))  # using viterbi algorithm
+                # print(self.h.predict(np.array([speedCategory]).reshape(len([speedCategory]), 1)))  # find most likely state sequence corresponding to X
+                # print(self.h.score(np.array([speedCategory]).reshape(len([speedCategory]), 1)))  # evaulate probability of sequence (X)
                 return self.h.predict([[speedCategory]])
 '''
 TEST #1: 

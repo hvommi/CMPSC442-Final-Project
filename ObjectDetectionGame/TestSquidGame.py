@@ -65,6 +65,10 @@ class SquidGame:
         return (abs(currDistance - prevDistance) / greenDur)
 
     def startGame(self):
+        print("------------------------------------")
+        print("--------SQUID GAME-------------")
+        print("------------------------------------")
+
         # Initializing variables: start values, etc.
         prevDistance = 0
         greenStartTime = 0
@@ -81,6 +85,9 @@ class SquidGame:
         tempSum = 0
         inFrame = False
         gameStart = False
+        minGreenDur = 1
+        maxGreenDur = 3
+        absMaxGreenDur = 5
 
         # Initialize window to fit screen
         windowName = "Squid Game"
@@ -116,12 +123,12 @@ class SquidGame:
                 greenStartTime = time.time()
                 greenEndTime = greenStartTime
                 # HMM result would do something here
-                greenDur = np.random.randint(1, 5) # Random time intervals: anywhere from 1 to 5 seconds
+                greenDur = np.random.randint(minGreenDur, maxGreenDur) # Random time interval
 
             if (greenEndTime - greenStartTime) <= greenDur:
                 # Do stuff during green light
                 currWindow = self.imGreen.copy()
-                print("Current distance from goal: %.2fft" % ((currDistance - self.goal) / 12))
+                # print("Current distance from goal: %.2fft" % ((currDistance - self.goal) / 12))
                 greenEndTime = time.time()
 
             else:
@@ -142,9 +149,15 @@ class SquidGame:
                         # Speed is the difference between the current distance measured and the previous distance, divided by the duration of the green light
                         speed = self.findSpeed(prevDistance, currDistance, greenDur)
                         # Feed speed into HMM
+                        prediction = self.hmm.feedHMM(speed)
                         print(speed)
-                        self.hmm.feedHMM(speed)
-
+                        print(prediction)
+                        print("Previous max green duration: " + str(maxGreenDur))
+                        if prediction[0] == 1 and maxGreenDur > minGreenDur + 1:
+                            maxGreenDur -= 1
+                        if prediction[0] == 0 and maxGreenDur < absMaxGreenDur:
+                            maxGreenDur += 1
+                        print("New max green duration: " + str(maxGreenDur))
                         
                     # Add delay for red light to detect movement
                     if (redEndTime - redStartTime) <= self.redDelay:
