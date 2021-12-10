@@ -43,7 +43,7 @@ class SquidGame:
     
     # Checks if player is in frame using pose landmarks
     def checkInFrame(self, res):
-        if res:
+        if res.pose_landmarks:
             landmarkList = res.pose_landmarks.landmark
             try:
                 # Checks to see if 70% of your shoulders are visible
