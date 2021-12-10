@@ -21,8 +21,8 @@ class SquidGame:
         self.video_height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
         # Initializing constant game stuff
-        self.moveThres = 250 # Threshold for movement for red light. If user movement passes this threshold, they lose
-        self.goal = 24 # How close to camera the player should be to win in inches
+        self.moveThres = 300 # Threshold for movement for red light. If user movement passes this threshold, they lose
+        self.goal = 36 # How close to camera the player should be to win in inches
         self.imGreen = np.zeros((int(self.video_height/10), int(self.video_width), 3), np.uint8) # Green light image
         self.imGreen[:] = (0, 255, 0)
         self.imRed = np.zeros((int(self.video_height/10), int(self.video_width), 3), np.uint8) # Red light image
@@ -164,7 +164,7 @@ class SquidGame:
                         tempSum = self.calc_sum(res.pose_landmarks.landmark)
                         redEndTime = time.time()
                         if abs(tempSum - userSum) > self.moveThres:
-                            print("DEAD ", abs(tempSum - userSum))
+                            print("LOSE: ", abs(tempSum - userSum))
                             lose = True
 
                     # Reset red and green light
@@ -174,7 +174,7 @@ class SquidGame:
 
             # Stuff for displaying game
             cv2.putText(currWindow, "Current distance from goal: %.2fft" % ((currDistance - self.goal) / 12),
-                (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 0), 3)
+                (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 3)
 
             mainWin = np.concatenate((frm, currWindow), axis=0)
             cv2.imshow(windowName, mainWin)
@@ -188,11 +188,11 @@ class SquidGame:
         if lose:
             # Do stuff if player lost
             currWindow = self.imRed.copy()
-            cv2.putText(currWindow, "You lose!", (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 0), 3)
+            cv2.putText(currWindow, "You lose!", (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 3)
         elif win:
             # Do stuff if player won
             currWindow = self.imGreen.copy()
-            cv2.putText(currWindow, "You win!", (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 0), 3)
+            cv2.putText(currWindow, "You win!", (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 1)
         if lose or win:
             mainWin = np.concatenate((frm, currWindow), axis=0)
             cv2.imshow(windowName, mainWin)
