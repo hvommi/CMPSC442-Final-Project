@@ -140,11 +140,8 @@ class SquidGame:
                         redEndTime = redStartTime
                         userSum = self.calc_sum(res.pose_landmarks.landmark)
                         # Finds speed during previous green light here. Returns 0 or 1, slow or fast
-                        print(prevDistance)
-                        print(currDistance)
-                        print(greenDur)
                         speed = self.findSpeed(prevDistance, currDistance, greenDur)
-
+                        
                     # Add delay for red light to detect movement
                     if (redEndTime - redStartTime) <= self.redDelay:
                         redEndTime = time.time()
