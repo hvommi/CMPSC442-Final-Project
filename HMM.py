@@ -1,8 +1,11 @@
+import warnings
 import numpy as np
 import hmmlearn.hmm as hmm
 from distanceFinder import *
 
 class HMM:
+
+        warnings.filterwarnings("ignore")
 
         def __init__(self):
                 self.observation_dict = {0: "slow", 1:"fast"}
@@ -26,7 +29,6 @@ class HMM:
 
                 self.h = hmm.MultinomialHMM(n_components=2, startprob_prior=self.startprob, transmat_prior=self.transmatrix)
                 self.h.emissionprob = self.emitmatrix
-
                 '''
                 Here our states are:
                         slow = 0,0,0,0,0
