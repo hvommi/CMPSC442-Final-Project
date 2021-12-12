@@ -22,7 +22,7 @@ class SquidGame:
 
         # Initializing constant game stuff
         self.moveThres = 300 # Threshold for movement for red light. If user movement passes this threshold, they lose
-        self.goal = 36 # How close to camera the player should be to win in inches
+        self.goal = 24 # How close to camera the player should be to win in inches
         self.imGreen = np.zeros((int(self.video_height/10), int(self.video_width), 3), np.uint8) # Green light image
         self.imGreen[:] = (0, 255, 0)
         self.imRed = np.zeros((int(self.video_height/10), int(self.video_width), 3), np.uint8) # Red light image
@@ -154,6 +154,7 @@ class SquidGame:
                         if prediction[0] == 0 and maxGreenDur < absMaxGreenDur:
                             maxGreenDur += 1
                         print("New max green duration: " + str(maxGreenDur))
+                        prevDistance = currDistance
                         
                     # Add delay for red light to detect movement
                     if (redEndTime - redStartTime) <= self.redDelay:
