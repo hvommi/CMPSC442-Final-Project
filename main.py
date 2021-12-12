@@ -1,4 +1,4 @@
-from ObjectDetectionGame.TestSquidGame import SquidGame
+from SquidGame import SquidGame
 
 if __name__ == "__main__":
     squidGame = SquidGame()

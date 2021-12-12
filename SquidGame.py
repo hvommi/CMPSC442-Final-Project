@@ -175,7 +175,7 @@ class SquidGame:
 
             # Stuff for displaying game
             cv2.putText(currWindow, "Current distance from goal: %.2fft" % ((currDistance - self.goal) / 12),
-                (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 3)
+                (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 2)
 
             mainWin = np.concatenate((frm, currWindow), axis=0)
             cv2.imshow(windowName, mainWin)
@@ -189,11 +189,11 @@ class SquidGame:
         if lose:
             # Do stuff if player lost
             currWindow = self.imRed.copy()
-            cv2.putText(currWindow, "You lose!", (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 3)
+            cv2.putText(currWindow, "You lose!", (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 2)
         elif win:
             # Do stuff if player won
             currWindow = self.imGreen.copy()
-            cv2.putText(currWindow, "You win!", (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 1)
+            cv2.putText(currWindow, "You win!", (0, int(self.video_height/10) - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 2)
         if lose or win:
             mainWin = np.concatenate((frm, currWindow), axis=0)
             cv2.imshow(windowName, mainWin)
